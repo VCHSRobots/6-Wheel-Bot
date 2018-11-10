@@ -8,8 +8,10 @@
 package org.usfirst.frc.team4415.robot;
 
 
+import ecommon.RobotMap;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 
 
 /**
@@ -18,8 +20,14 @@ import edu.wpi.first.wpilibj.Joystick;
  */
 public class Robot extends IterativeRobot {
 	private DriveTrain m_drivetrain = new DriveTrain();
+	private FrisbeeShoot m_frisbeeShoot = new FrisbeeShoot();
+	
 //	Button m_gearShift;
 	//DoubleSolenoid gears;
+	
+	//PDP
+	PowerDistributionPanel m_pdp;
+	
 	
 	//Booleans
 	boolean gearLoop = false;
@@ -32,7 +40,11 @@ public class Robot extends IterativeRobot {
 		m_controller = new Joystick(0);
 		
 		//Runs Drive Train Initialization
-		m_drivetrain.RunRobotInit(m_controller);
+		m_drivetrain.RobotInit(m_controller);
+		m_frisbeeShoot.RobotInit(m_controller);
+		
+		//PDP
+		m_pdp = new PowerDistributionPanel(RobotMap.pdp);
 		
 
 		//Assigns USB port for Controller
@@ -40,14 +52,20 @@ public class Robot extends IterativeRobot {
 	}
 	
 	@Override
+	public void robotPeriodic() {
+		m_drivetrain.Report();
+		m_frisbeeShoot.Report();
+	}
+	
+	@Override
 	public void teleopInit() {
-		m_drivetrain.RunTeleopInit();
+		m_drivetrain.TeleopInit();
 	}
 
 	@Override
 	public void teleopPeriodic() {
-		m_drivetrain.RunTeleopPeriodic(m_controller);
-		m_drivetrain.Report();
+		m_drivetrain.TeleopPeriodic(m_controller, m_pdp);
+		m_frisbeeShoot.TeleopPeriodic();
 		
 	}
 }

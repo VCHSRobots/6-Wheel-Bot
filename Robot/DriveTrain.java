@@ -4,6 +4,7 @@ import ecommon.RobotMap;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -17,7 +18,8 @@ public class DriveTrain {
 	private Joystick m_joystick;
 	
 	//PDP
-	//PowerDistributionPanel pdp;
+	PowerDistributionPanel m_pdp;
+	
 	//Right Side Motors
 	WPI_TalonSRX m_rMaster;
 	WPI_VictorSPX m_rMotor1;
@@ -27,33 +29,31 @@ public class DriveTrain {
 	WPI_VictorSPX m_lMotor2;
 	WPI_TalonSRX m_lMaster;
 	
-	//Current Variables
-//	double rMasterCurrent, rMotor1Current, rMotor2Current;
-//	double lMasterCurrent, lMotor1Current, lMotor2Current;	
-//	double rSideCurrent, lSideCurrent;
+	//Current
+	double m_rSideCurrent, m_lSideCurrent;
 	
 	//Encoders
-	Encoder rightEncoder;
-	Encoder leftEncoder;
-	String shiftStatus;
+	Encoder m_rightEncoder;
+	Encoder m_leftEncoder;
+	String m_shiftStatus;
+	
+	int x = 0;
 	
 	//Buttons
 	Button m_gearShift;
 	Button m_encoderBut;
 	
 	//Pneumatics
-	DoubleSolenoid gears;
+	DoubleSolenoid m_gears;
 	
 	//Booleans
-	boolean gearLoop = false;
-	boolean encoderLoop = false;
+	boolean m_gearLoop = false;
+	boolean m_encoderLoop = false;
 	
-	public void RunRobotInit(Joystick j) {
+	public void RobotInit(Joystick j) {
 		//Joystick
 		m_joystick = j;
 		
-		//PDP
-		//pdp = new PowerDistributionPanel();
 		
 		//Buttons
 		m_gearShift = new JoystickButton(m_joystick, 1);
@@ -70,39 +70,49 @@ public class DriveTrain {
 		m_lMaster = new WPI_TalonSRX(RobotMap.lMaster);
 		
 //		//Pneumatics
-		gears = new DoubleSolenoid(0, 1);
+		m_gears = new DoubleSolenoid(0, 1);
 		
 		
 		//Current Gear
-		shiftStatus = "NULL";
-	}
-	
-	public void RunTeleopInit() {
-		gears.set(DoubleSolenoid.Value.kReverse);
-		m_rMaster.setSelectedSensorPosition(0, 0, 0);
-		m_lMaster.setSelectedSensorPosition(0, 0, 0);
-	}
-
-	public void RunTeleopPeriodic(Joystick j) {
-		
-//		double rMasterCurrent = pdp.getCurrent(RobotMap.rMasterCurrent);
-//		double rMotor1Current = pdp.getCurrent(RobotMap.rMotor1Current);
-//		double rMotor2Current = pdp.getCurrent(RobotMap.rMotor2Current);
-//		
-//		double lMasterCurrent = pdp.getCurrent(RobotMap.lMasterCurrent);
-//		double lMotor1Current = pdp.getCurrent(RobotMap.lMotor1Current);
-//		double lMotor2Current = pdp.getCurrent(RobotMap.lMotor2Current);
-//		
-//		double rSideCurrent = rMasterCurrent + rMotor1Current + rMotor2Current;
-//		double lSideCurrent = lMasterCurrent + lMotor1Current + lMotor2Current;
-		
+		m_shiftStatus = "NULL";
 		
 		//Encoders
 		m_rMaster.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
 		m_lMaster.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
+	}
+	
+	public void TeleopInit() {
+		m_gears.set(DoubleSolenoid.Value.kReverse);
+		m_shiftStatus = "Low Gear";
+		m_rMaster.setSelectedSensorPosition(0, 0, 0);
+		m_lMaster.setSelectedSensorPosition(0, 0, 0);
 		
-		
+		m_pdp.clearStickyFaults();
+	}
+
+	public void TeleopPeriodic(Joystick j, PowerDistributionPanel p) {
 		m_joystick = j;
+		m_pdp = p;
+		x++;
+		SmartDashboard.putNumber("x", x);
+		
+		double rMasterCurrent = m_pdp.getCurrent(RobotMap.rMasterCurrent);
+		double rMotor1Current = m_pdp.getCurrent(RobotMap.rMotor1Current);
+		double rMotor2Current = m_pdp.getCurrent(RobotMap.rMotor2Current);
+		
+		double lMasterCurrent = m_pdp.getCurrent(RobotMap.lMasterCurrent);
+		double lMotor1Current = m_pdp.getCurrent(RobotMap.lMotor1Current);
+		double lMotor2Current = m_pdp.getCurrent(RobotMap.lMotor2Current);
+		
+		m_rSideCurrent = rMasterCurrent + rMotor1Current + rMotor2Current;
+		m_lSideCurrent = lMasterCurrent + lMotor1Current + lMotor2Current;
+		
+		
+		
+		
+		
+		
+		
 		//Retrieves Axis value from controller (-1 to 1)
 				double xAxis, yAxis;
 				xAxis = m_joystick.getRawAxis(5);
@@ -134,34 +144,30 @@ public class DriveTrain {
 				
 				
 		//Gear Shift
-				if (m_gearShift.get() == true && gearLoop == false) {
-					gearLoop = true;
-					if (gears.get() == DoubleSolenoid.Value.kReverse) {
-						gears.set(DoubleSolenoid.Value.kForward);
+				if (m_gearShift.get() && !m_gearLoop) {
+					m_gearLoop = true;
+					if (m_gears.get() == DoubleSolenoid.Value.kReverse) {
+						m_gears.set(DoubleSolenoid.Value.kForward);
+						m_shiftStatus = "High Gear";
 					} else {
-						gears.set(DoubleSolenoid.Value.kReverse);
+						m_gears.set(DoubleSolenoid.Value.kReverse);
+						m_shiftStatus = "Low Gear";
 					}
 					
 				}
-				if (m_gearShift.get() == false) {
-					gearLoop = false;
+				if (!m_gearShift.get()) {
+					m_gearLoop = false;
 				}
 				
-				if (gears.get() == DoubleSolenoid.Value.kReverse) {
-					shiftStatus = "Low Gear";
-				} else if (gears.get() == DoubleSolenoid.Value.kForward) {
-					shiftStatus = "High Gear";
-				}
-				
-		//Sets Encoder value too 0;	
-				if (m_encoderBut.get() == true && encoderLoop == false) {
-					encoderLoop = true;
+		//Sets Encoder value to 0;	
+				if (m_encoderBut.get() == true && m_encoderLoop == false) {
+					m_encoderLoop = true;
 					m_rMaster.setSelectedSensorPosition(0, 0, 0);
 					m_lMaster.setSelectedSensorPosition(0, 0, 0);
 					
 				}
 				if (m_encoderBut.get() == false) {
-					encoderLoop = false;
+					m_encoderLoop = false;
 				}
 				
 			}
@@ -170,9 +176,9 @@ public class DriveTrain {
 		public void Report() {
 			
 			
-			SmartDashboard.putString("Current Gear", shiftStatus);
-//			SmartDashboard.putNumber("Right Side Current", rSideCurrent);
-//			SmartDashboard.putNumber("Left Side Current", lSideCurrent);
+			SmartDashboard.putString("Current Gear", m_shiftStatus);
+			SmartDashboard.putNumber("Right Side Current", m_rSideCurrent);
+			SmartDashboard.putNumber("Left Side Current", m_lSideCurrent);
 			
 			SmartDashboard.putNumber("Right Encoder Position", m_rMaster.getSelectedSensorPosition());
 			SmartDashboard.putNumber("Left Encoder Position", m_lMaster.getSelectedSensorPosition());
