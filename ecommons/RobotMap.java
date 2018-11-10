@@ -10,8 +10,13 @@ public class RobotMap {
 	public static int lMotor1 = 13;
 	public static int lMotor2 = 14;
 	public static int lMaster = 15;
+	//Frisbee Shooter
+	public static int frisbee = 16;
+	public static int frisTurn = 17;
 	
 	//PDP Port Numbers
+	public static int pdp = 1;
+	
 	public static int rMasterCurrent = 5;
 	public static int rMotor1Current = 4;
 	public static int rMotor2Current = 3;
