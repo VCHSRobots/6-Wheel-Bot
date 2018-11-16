@@ -1,6 +1,6 @@
 # 6-Wheel-Bot
 
-6 Wheel Bot
+6 wheels with Drop Center drive.... 3 Sims
 
 Has 2 Gears... Use A Too Shift on controller
 
