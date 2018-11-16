@@ -25,5 +25,12 @@ public class RobotMap {
 	public static int lMotor2Current = 1;
 	public static int lMasterCurrent = 0;
 	
+	//BUTTONS
+	public static int gearShift = 1;
+	public static int encoderReset = 2;
+	public static int pump = 3;
+	public static int frisStart = 8;
+	public static int frisStop = 7;
+	public static int frisFire = 6;
 
 }
