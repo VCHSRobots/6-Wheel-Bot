@@ -9,9 +9,13 @@ package org.usfirst.frc.team4415.robot;
 
 
 import ecommon.RobotMap;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
+import edu.wpi.first.wpilibj.buttons.Button;
+import edu.wpi.first.wpilibj.buttons.JoystickButton;
+
 
 
 /**
@@ -27,10 +31,12 @@ public class Robot extends IterativeRobot {
 	
 	//PDP
 	PowerDistributionPanel m_pdp;
-	
+	Button m_pump;
+	Compressor m_comp;
 	
 	//Booleans
-	boolean gearLoop = false;
+	boolean m_gearLoop = false;
+	boolean m_testLoop = false;
 	//Xbox Controller
 	Joystick m_controller;
 
@@ -38,6 +44,10 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		//Assigns USB port for Controller
 		m_controller = new Joystick(0);
+		
+		
+		m_pump = new JoystickButton(m_controller, RobotMap.pump);
+		m_comp = new Compressor(0);
 		
 		//Runs Drive Train Initialization
 		m_drivetrain.RobotInit(m_controller);
@@ -60,12 +70,22 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopInit() {
 		m_drivetrain.TeleopInit();
+		m_frisbeeShoot.TeleopInit();
+		m_comp.setClosedLoopControl(false);
+		
+		
 	}
 
 	@Override
 	public void teleopPeriodic() {
 		m_drivetrain.TeleopPeriodic(m_controller, m_pdp);
 		m_frisbeeShoot.TeleopPeriodic();
-		
+		if (m_pump.get() && !m_testLoop) {
+			m_testLoop = true;
+			m_comp.setClosedLoopControl(!m_comp.getClosedLoopControl());
+		}
+		if (!m_pump.get()) {
+			m_testLoop = false;
+		}
 	}
 }

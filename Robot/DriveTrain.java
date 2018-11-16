@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.usfirst.frc.team4415.robot.TalonReset;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -15,6 +16,8 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 public class DriveTrain {
+	
+	
 	private Joystick m_joystick;
 	
 	//PDP
@@ -56,8 +59,8 @@ public class DriveTrain {
 		
 		
 		//Buttons
-		m_gearShift = new JoystickButton(m_joystick, 1);
-		m_encoderBut = new JoystickButton(m_joystick, 2);
+		m_gearShift = new JoystickButton(m_joystick, RobotMap.gearShift);
+		m_encoderBut = new JoystickButton(m_joystick, RobotMap.encoderReset);
 		
 		
 		//Right Side Motors Talon Assign
@@ -71,8 +74,6 @@ public class DriveTrain {
 		
 //		//Pneumatics
 		m_gears = new DoubleSolenoid(0, 1);
-		
-		
 		//Current Gear
 		m_shiftStatus = "NULL";
 		
@@ -87,7 +88,8 @@ public class DriveTrain {
 		m_rMaster.setSelectedSensorPosition(0, 0, 0);
 		m_lMaster.setSelectedSensorPosition(0, 0, 0);
 		
-		m_pdp.clearStickyFaults();
+		m_rMaster.configOpenloopRamp(0, 0);
+		m_lMaster.configOpenloopRamp(0, 0);
 	}
 
 	public void TeleopPeriodic(Joystick j, PowerDistributionPanel p) {
